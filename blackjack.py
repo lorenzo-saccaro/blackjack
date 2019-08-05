@@ -1,12 +1,13 @@
+import os
 from deck import Deck
 from player import Player
 from dealer import Dealer
-import os
 
-# ===========================================================================================
-# da migliorare print delle mani con seme e punteggio e compattare gameplay logic (auto coiche ace?)
+
+# ==================================================================================================
+# da migliorare print delle mani con seme e punteggio e compattare gameplay logic
 # implmentare regole avanzate, gestione dei mazzi  e più giocatori
-# ===========================================================================================
+# ==================================================================================================
 
 
 def welcome():
@@ -18,7 +19,8 @@ def welcome():
     print('- The dealer has 1 card face up and 1 face down.')
     print('- The player has 2 cards face up, he can choose to hit (get a card) or stay.')
     print('- If he goes over 21 (BUST) the hand is over and he loses the bet.')
-    print('- In case of 21 the player wins unless the dealer reveales a 21: the hand is a tie.')
+    print('- In case of 21 the player wins immediately')
+    print('- Execption: if the 21 is dealt the dealer show his hands to see if he can tie the hand')
     print('- Otherwise the dealer has to hit until his score is at least 17.')
     print('- If the dealear\'s score is 17 with an ace with value 11, he has to hit.')
     print('- When the dealer stops hitting (if he has not busted), the higher value hand wins.')
@@ -68,14 +70,17 @@ def gameplay():
 
         bet = player.place_bet()
 
-        player.show_hand()
         dealer.show_hand(True)
+        player.show_hand()
+        print('\n')
 
         score = player.hand.hand_value()
-        deal_score = dealer.hand.hand_value()
+        deal_score, soft17 = dealer.hand.hand_value()
 
         if score == 21:  # check for blackjack
             dealer.show_hand()
+            player.show_hand()
+            print('\n')
             if deal_score == 21:  # only case where that could be a draw
                 print('Tie')
                 player.balance += bet
@@ -90,7 +95,9 @@ def gameplay():
                 ans = player.hit_or_stay()
                 if ans == 'hit':
                     player.hand.add_card(deck.draw())
+                    dealer.show_hand(True)
                     player.show_hand()
+                    print('\n')
                     score = player.hand.hand_value()
                     if score > 21:
                         print("BUST")
@@ -105,18 +112,23 @@ def gameplay():
 
         if not game_ended:  # dealer turn
             dealer.show_hand()
+            player.show_hand()
+            print('\n')
             while deal_score <= 17:
                 while deal_score < 17:
                     dealer.hand.add_card(deck.draw())
                     dealer.show_hand()
-                    deal_score = dealer.hand.hand_value()
-                if deal_score == 17 and 'A' in dealer.hand.hand:
+                    player.show_hand()
+                    print('\n')
+                    deal_score, sof17 = dealer.hand.hand_value()
+                if soft17:
                     dealer.hand.add_card(deck.draw())
                     dealer.show_hand()
-                    deal_score = dealer.hand.hand_value()
-                if deal_score == 17 and 'A' not in dealer.hand.hand:
+                    player.show_hand()
+                    print('\n')
+                    deal_score, sof17 = dealer.hand.hand_value()
+                else:
                     break
-
             if deal_score > 21 or score > deal_score:
                 print("You win")
                 player.balance += 2*bet

@@ -17,6 +17,7 @@ class Dealer():
             self.hand.append(card)
 
         def hand_value(self):
+            soft = False
             value = 0
             aces = 0
             for card in self.hand:
@@ -26,7 +27,9 @@ class Dealer():
             while (aces > 0 and value > 21):  # da rivedere regole soft 17
                 value -= 10
                 aces -= 1
-            return value
+            if value == 17 and aces > 0:
+                soft = True
+            return value,soft
 
         def print_hand(self, hidden):
             cards = ''
