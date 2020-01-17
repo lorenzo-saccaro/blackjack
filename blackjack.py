@@ -56,11 +56,13 @@ def gameplay():
     player = Player(welcome())
     dealer = Dealer()
 
+    deck = Deck()
+    deck.shuffle()
+
     while True:
         game_ended = False
 
-        deck = Deck()
-        deck.shuffle()
+        deck.check_reshuffle()
 
         player.hand.add_card(deck.draw())
         player.hand.add_card(deck.draw())
