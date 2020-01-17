@@ -16,11 +16,13 @@ def gameplay(percentage):
     losses = 0
     ties = 0
 
+    deck = Deck()
+    deck.shuffle()
+
     while True:
         game_ended = False
 
-        deck = Deck()
-        deck.shuffle()
+        deck.check_reshuffle()
 
         player.hand.add_card(deck.draw())
         player.hand.add_card(deck.draw())
@@ -118,14 +120,16 @@ def gameplay(percentage):
 if __name__ == '__main__':
     file = open('simple_logic.txt', 'w')
     progress = 0
-    for perc in range(1, 11):
+    max_iteration = 10000
+    max_range = 2
+    for perc in range(1, max_range):
         N = 0
-        while N < 10000:
+        while N < max_iteration:
             wins, losses, ties = gameplay(0.01*perc)
             file.write(f'{wins}\t{losses}\t{ties}\t{wins+losses+ties}\n')
             N += 1
             if N % 100 == 1:
-                progress += 1
-                print('{:4.1f}%'.format(0.1*progress))
+                progress += 100/(max_iteration*len(range(1,max_range)))
+                print('{:4.1f}%'.format(100*progress))
         file.write('#\t#\t#\t#')
     file.close()
