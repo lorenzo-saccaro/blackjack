@@ -159,9 +159,27 @@ def gameplay():
 
         else:  # UNDER case player turn
             ans = ''
+            doubled = False
             while not ans == 'stay':
-                ans = player.hit_or_stay()
-                if ans == 'hit':
+                ans = player.hit_or_stay(doubled)
+                doubled = True
+                if ans == 'double':
+                    player.balance -= bet
+                    bet = 2*bet
+                    player.hand.add_card(deck.draw())
+                    dealer.show_hand(True)
+                    player.show_hand()
+                    print('\n')
+                    score = player.hand.hand_value()
+                    if score > 21:
+                        print("BUST")
+                        game_ended = True
+                        break
+                    else:
+                        game_ended = False
+                        break
+
+                elif ans == 'hit':
                     player.hand.add_card(deck.draw())
                     dealer.show_hand(True)
                     player.show_hand()
