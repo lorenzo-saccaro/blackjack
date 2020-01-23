@@ -6,7 +6,7 @@ from dealer import Dealer
 
 # ==================================================================================================
 # da migliorare print delle mani con seme e punteggio e compattare gameplay logic
-# implmentare regole avanzate, gestione dei mazzi  e più giocatori
+# implementare regole avanzate (double down and split) e più giocatori
 # ==================================================================================================
 
 
@@ -31,11 +31,11 @@ def welcome():
 
     while True:
         try:
-            buy_in = int(input('Insert the buyin ammount: $'))
+            buy_in = int(input('Insert the buyin amount: $'))
             if buy_in < 0:
                 raise ValueError
         except ValueError:
-            print('Please insert only a positive ammount')
+            print('Please insert only a positive amount')
             continue
         else:
             return buy_in
@@ -50,6 +50,22 @@ def replay():
             return False
         else:
             continue
+
+
+def hand_ended(player):
+
+    print(f'Player balance now is: {player.balance}$')
+    if player.balance <= 0:
+        print('Game over: you are broke!')
+        return False, False
+    else:
+        if replay():
+            player = Player(player.balance)
+            dealer = Dealer()
+            return player, dealer
+        else:
+            print(f'You left the table with {player.balance}$')
+            return False, False
 
 
 def gameplay():
@@ -103,18 +119,11 @@ def gameplay():
                     player.balance += 3*ins_bet
                     if score == 21:
                         player.balance += bet
-                    print(f'Player balance now is: {player.balance}$')
-                    if player.balance <= 0:
-                        print('Game over: you are broke!')
-                        break
+                    player, dealer = hand_ended(player)
+                    if any((player, dealer)):
+                        continue
                     else:
-                        if replay():
-                            player = Player(player.balance)
-                            dealer = Dealer()
-                            continue
-                        else:
-                            print(f'You left the table with {player.balance}$')
-                            break
+                        break
             else:
                 if deal_score == 21:
                     dealer.show_hand()
@@ -123,32 +132,18 @@ def gameplay():
                     if score == 21:
                         print('Tie')
                         player.balance += bet
-                        print(f'Player balance now is: {player.balance}$')
-                        if player.balance <= 0:
-                            print('Game over: you are broke!')
-                            break
+                        player, dealer = hand_ended(player)
+                        if any((player, dealer)):
+                            continue
                         else:
-                            if replay():
-                                player = Player(player.balance)
-                                dealer = Dealer()
-                                continue
-                            else:
-                                print(f'You left the table with {player.balance}$')
-                                break
+                            break
                     else:
                         print('You lost')
-                        print(f'Player balance now is: {player.balance}$')
-                        if player.balance <= 0:
-                            print('Game over: you are broke!')
-                            break
+                        player, dealer = hand_ended(player)
+                        if any((player, dealer)):
+                            continue
                         else:
-                            if replay():
-                                player = Player(player.balance)
-                                dealer = Dealer()
-                                continue
-                            else:
-                                print(f'You left the table with {player.balance}$')
-                                break
+                            break
 
         if score == 21:  # check for blackjack
             dealer.show_hand()
@@ -211,17 +206,11 @@ def gameplay():
             else:
                 print("You lose")
 
-        print(f'Player balance now is: {player.balance}$')
-        if player.balance <= 0:
-            print('Game over: you are broke!')
-            break
+        player, dealer = hand_ended(player)
+        if any((player, dealer)):
+            continue
         else:
-            if replay():
-                player = Player(player.balance)
-                dealer = Dealer()
-            else:
-                print(f'You left the table with {player.balance}$')
-                break
+            break
 
     os.system('PAUSE')
 
