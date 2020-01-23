@@ -103,7 +103,52 @@ def gameplay():
                     player.balance += 3*ins_bet
                     if score == 21:
                         player.balance += bet
-                    break
+                    print(f'Player balance now is: {player.balance}$')
+                    if player.balance <= 0:
+                        print('Game over: you are broke!')
+                        break
+                    else:
+                        if replay():
+                            player = Player(player.balance)
+                            dealer = Dealer()
+                            continue
+                        else:
+                            print(f'You left the table with {player.balance}$')
+                            break
+            else:
+                if deal_score == 21:
+                    dealer.show_hand()
+                    player.show_hand()
+                    print('\n')
+                    if score == 21:
+                        print('Tie')
+                        player.balance += bet
+                        print(f'Player balance now is: {player.balance}$')
+                        if player.balance <= 0:
+                            print('Game over: you are broke!')
+                            break
+                        else:
+                            if replay():
+                                player = Player(player.balance)
+                                dealer = Dealer()
+                                continue
+                            else:
+                                print(f'You left the table with {player.balance}$')
+                                break
+                    else:
+                        print('You lost')
+                        print(f'Player balance now is: {player.balance}$')
+                        if player.balance <= 0:
+                            print('Game over: you are broke!')
+                            break
+                        else:
+                            if replay():
+                                player = Player(player.balance)
+                                dealer = Dealer()
+                                continue
+                            else:
+                                print(f'You left the table with {player.balance}$')
+                                break
 
         if score == 21:  # check for blackjack
             dealer.show_hand()
