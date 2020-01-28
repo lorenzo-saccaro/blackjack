@@ -39,6 +39,19 @@ class Player():
                 aces -= 1
             return value
 
+        def hand_is_soft(self):
+            value = 0
+            aces = 0
+            for card in self.hand:
+                value += self.values[card]
+                if card == 'A':
+                    aces += 1
+            while (aces > 0 and value > 21):
+                value -= 10
+                aces -= 1
+            return aces >= 1
+
+
         def print_hand(self):
             cards = ''
             for card in self.hand:

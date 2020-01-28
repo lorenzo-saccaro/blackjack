@@ -3,36 +3,36 @@ from dealer import Dealer
 from auto_player import Player
 
 
-def logic(dealer, player, hit):
+def logic(dealer, player):
     face_up = dealer.hand.hand[0]
-    cards = player.hand.hand
     score = player.hand.hand_value()
-    if 'A' in cards and not hit:  # soft cases
-        if '9' in cards:
+    soft = player.hand.hand_is_soft()
+    if soft:  # soft cases
+        if score-11 == 9:
             return 's'
-        elif '8' in cards:
+        elif score-11 == 8:
             if face_up == '6':
                 return 'd'
             else:
                 return 's'
-        elif '7' in cards:
+        elif score-11 == 7:
             if face_up in ["2", "3", "4", "5", "6"]:
                 return 'd'
             elif face_up in ["7", "8"]:
                 return 's'
             else:
                 return 'h'
-        elif '6' in cards:
+        elif score-11 == 6:
             if face_up in ['3', '4', '5', '6']:
                 return 'd'
             else:
                 return 'h'
-        elif '5' in cards or '4' in cards:
+        elif score-11 == 5 or score-11 == 4:
             if face_up in ['4','5','6']:
                 return 'd'
             else:
                 return 'h'
-        elif '2' in cards or '3' in cards:
+        elif score-11 == 3 or score-11 == 2:
             if face_up in ['5','6']:
                 return 'd'
             else:
@@ -115,7 +115,7 @@ def gameplay(percentage):
             game_ended = True
 
         else:  # UNDER case player turn
-            ans = logic(dealer, player, False)
+            ans = logic(dealer, player)
             if ans == 'd':
                 player.balance -= bet
                 bet = 2 * bet
@@ -139,7 +139,7 @@ def gameplay(percentage):
                     elif score == 21:
                         game_ended = False
                         break
-                    ans = logic(dealer, player, True)
+                    ans = logic(dealer, player)
 
         if not game_ended:  # dealer turn
             while deal_score <= 17:
@@ -174,7 +174,7 @@ def gameplay(percentage):
 if __name__ == '__main__':
     file = open('simple_logic.txt', 'w')
     progress = 0
-    max_iteration = 100
+    max_iteration = 1000
     max_range = 2
     for perc in range(1, max_range):
         N = 0
