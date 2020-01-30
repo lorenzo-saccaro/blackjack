@@ -71,7 +71,7 @@ def logic(dealer, player):
 # noinspection DuplicatedCode,DuplicatedCode
 def gameplay(percentage):
 
-    player = Player(100)
+    player = Player(1000)
     dealer = Dealer()
 
     wins = 0
@@ -92,7 +92,9 @@ def gameplay(percentage):
         dealer.hand.add_card(deck.draw())
         dealer.hand.add_card(deck.draw())
 
-        bet = player.place_bet(percentage)
+        #  bet = player.place_bet()
+        bet = 1
+        player.balance -= bet
 
         score = player.hand.hand_value()
         deal_score, soft17 = dealer.hand.hand_value()
@@ -162,13 +164,14 @@ def gameplay(percentage):
             else:
                 losses += 1
 
-        if player.balance < 1:
+        if player.balance <= 1:
             break
         else:
             player = Player(player.balance)
             dealer = Dealer()
 
     return wins, losses, ties
+
 
 def run_gameplay(it):
     i = 0
@@ -188,7 +191,7 @@ def run_gameplay(it):
 
 if __name__ == '__main__':
     from multiprocessing import Pool
-    N = 100000  # iterations
+    N = 10000  # iterations
     P = 4  # thread
 
     p = Pool(P)
