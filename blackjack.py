@@ -6,7 +6,7 @@ from dealer import Dealer
 
 # ==================================================================================================
 # da migliorare print delle mani con seme e punteggio e compattare gameplay logic
-# implementare regole avanzate (double down and split) e più giocatori
+# implementare regole avanzate (split multiple time) e più giocatori
 # ==================================================================================================
 
 
@@ -50,6 +50,13 @@ def replay():
             return False
         else:
             continue
+
+
+def split_possible(player):
+    first = player.hand.hand[0]
+    second = player.hand.hand[1]
+
+    return first == second or (first in ['10', 'J', 'Q', 'K'] and second in ['10', 'J', 'Q', 'K'])
 
 
 def hand_ended(player):
@@ -158,77 +165,174 @@ def gameplay():
             game_ended = True
 
         else:  # UNDER case player turn
-            ans = ''
-            doubled = False
-            while not ans == 'stay':
-                ans = player.hit_or_stay(doubled)
-                doubled = True
-                if ans == 'double':
-                    player.balance -= bet
-                    bet = 2*bet
-                    player.hand.add_card(deck.draw())
-                    dealer.show_hand(True)
-                    player.show_hand()
-                    print('\n')
-                    score = player.hand.hand_value()
-                    if score > 21:
-                        print("BUST")
-                        game_ended = True
-                        break
-                    else:
-                        game_ended = False
-                        break
 
-                elif ans == 'hit':
-                    player.hand.add_card(deck.draw())
+            if split_possible(player) and player.split(bet):  # SPLIT
+                player.balance -= bet
+                player.split_hand()
+                bets = list()
+                scores = list()
+                game_status = list()
+                for hand in player.hands:
+                    hand.add_card(deck.draw())
                     dealer.show_hand(True)
-                    player.show_hand()
+                    hand.print_hand()
                     print('\n')
-                    score = player.hand.hand_value()
-                    if score > 21:
-                        print("BUST")
-                        game_ended = True
-                        break
-                    elif score == 21:
+                    ans = ''
+                    doubled = False
+                    score = hand.hand_value()
+                    if score == 21:
+                        ans = 'stay'
                         game_ended = False
-                        break
-                continue
+                    while not ans == 'stay':
+                        ans = player.hit_or_stay(doubled)
+                        doubled = True
+                        if ans == 'double':
+                            player.balance -= bet
+                            bet = 2 * bet
+                            hand.add_card(deck.draw())
+                            dealer.show_hand(True)
+                            hand.print_hand()
+                            print('\n')
+                            score = hand.hand_value()
+                            if score > 21:
+                                print("BUST")
+                                game_ended = True
+                                break
+                            else:
+                                game_ended = False
+                                break
 
-        if not game_ended:  # dealer turn
-            dealer.show_hand()
-            player.show_hand()
-            print('\n')
-            while deal_score <= 17:
-                while deal_score < 17:
-                    dealer.hand.add_card(deck.draw())
-                    dealer.show_hand()
-                    player.show_hand()
-                    print('\n')
-                    deal_score, sof17 = dealer.hand.hand_value()
-                if soft17:
-                    dealer.hand.add_card(deck.draw())
-                    dealer.show_hand()
-                    player.show_hand()
-                    print('\n')
-                    deal_score, sof17 = dealer.hand.hand_value()
+                        elif ans == 'hit':
+                            hand.add_card(deck.draw())
+                            dealer.show_hand(True)
+                            hand.print_hand()
+                            print('\n')
+                            score = hand.hand_value()
+                            if score > 21:
+                                print("BUST")
+                                game_ended = True
+                                break
+                            elif score == 21:
+                                game_ended = False
+                                break
+                        continue
+
+                    scores.append(score)
+                    game_status.append(game_ended)
+                    bets.append(bet)
+
+                for i, hand in enumerate(player.hands):
+                    game_ended = game_status[i]
+                    score = scores[i]
+                    bet = bets[i]
+                    if not game_ended:  # dealer turn
+                        dealer.show_hand()
+                        hand.print_hand()
+                        print('\n')
+                        while deal_score <= 17:
+                            while deal_score < 17:
+                                dealer.hand.add_card(deck.draw())
+                                dealer.show_hand()
+                                hand.print_hand()
+                                print('\n')
+                                deal_score, sof17 = dealer.hand.hand_value()
+                            if soft17:
+                                dealer.hand.add_card(deck.draw())
+                                dealer.show_hand()
+                                hand.print_hand()
+                                print('\n')
+                                deal_score, sof17 = dealer.hand.hand_value()
+                            else:
+                                break
+                        if deal_score > 21 or score > deal_score:
+                            print("You win")
+                            player.balance += 2 * bet
+
+                        elif deal_score == score:
+                            print('Tie')
+                            player.balance += bet
+
+                        else:
+                            print("You lose")
+
+                player, dealer = hand_ended(player)
+                if any((player, dealer)):
+                    continue
                 else:
                     break
-            if deal_score > 21 or score > deal_score:
-                print("You win")
-                player.balance += 2*bet
-
-            elif deal_score == score:
-                print('Tie')
-                player.balance += bet
 
             else:
-                print("You lose")
+                ans = ''
+                doubled = False
+                while not ans == 'stay':
+                    ans = player.hit_or_stay(doubled)
+                    doubled = True
+                    if ans == 'double':
+                        player.balance -= bet
+                        bet = 2*bet
+                        player.hand.add_card(deck.draw())
+                        dealer.show_hand(True)
+                        player.show_hand()
+                        print('\n')
+                        score = player.hand.hand_value()
+                        if score > 21:
+                            print("BUST")
+                            game_ended = True
+                            break
+                        else:
+                            game_ended = False
+                            break
 
-        player, dealer = hand_ended(player)
-        if any((player, dealer)):
-            continue
-        else:
-            break
+                    elif ans == 'hit':
+                        player.hand.add_card(deck.draw())
+                        dealer.show_hand(True)
+                        player.show_hand()
+                        print('\n')
+                        score = player.hand.hand_value()
+                        if score > 21:
+                            print("BUST")
+                            game_ended = True
+                            break
+                        elif score == 21:
+                            game_ended = False
+                            break
+                    continue
+
+            if not game_ended:  # dealer turn
+                dealer.show_hand()
+                player.show_hand()
+                print('\n')
+                while deal_score <= 17:
+                    while deal_score < 17:
+                        dealer.hand.add_card(deck.draw())
+                        dealer.show_hand()
+                        player.show_hand()
+                        print('\n')
+                        deal_score, sof17 = dealer.hand.hand_value()
+                    if soft17:
+                        dealer.hand.add_card(deck.draw())
+                        dealer.show_hand()
+                        player.show_hand()
+                        print('\n')
+                        deal_score, sof17 = dealer.hand.hand_value()
+                    else:
+                        break
+                if deal_score > 21 or score > deal_score:
+                    print("You win")
+                    player.balance += 2*bet
+
+                elif deal_score == score:
+                    print('Tie')
+                    player.balance += bet
+
+                else:
+                    print("You lose")
+
+            player, dealer = hand_ended(player)
+            if any((player, dealer)):
+                continue
+            else:
+                break
 
     os.system('PAUSE')
 
