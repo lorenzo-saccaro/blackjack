@@ -2,6 +2,7 @@ class Player:
     def __init__(self, balance):
         self.balance = balance
         self.hand = self.Hand()  # analizza comportamento
+        self.hands = list()
 
     def place_bet(self):
         try:
@@ -49,6 +50,24 @@ class Player:
 
     def show_hand(self):
         self.hand.print_hand()
+
+    def split_hand(self):
+        hand2 = self.Hand()
+        hand2.add_card(self.hand.hand.pop(1))
+        self.hands.append(self.hand)
+        self.hands.append(hand2)
+
+    def split(self, bet):
+        while True:
+            ans = input("Do you want to splint yur hand? (y or n) ")
+            if ans == 'y':
+                if bet > self.balance:
+                    print("Not enough money to split")
+                    return False
+                else:
+                    return True
+            elif ans == 'n':
+                return True
 
     class Hand:
 
