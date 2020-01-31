@@ -112,7 +112,7 @@ def split_possible(player):
 # noinspection DuplicatedCode,DuplicatedCode
 def gameplay(percentage):
 
-    player = Player(1000)
+    player = Player(100000)
     dealer = Dealer()
 
     wins = 0
@@ -318,7 +318,7 @@ def run_gameplay(it):
 
 if __name__ == '__main__':
     from multiprocessing import Pool
-    N = 12  # iterations
+    N = 4  # iterations
     P = 4  # thread
 
     p = Pool(P)
