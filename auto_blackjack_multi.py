@@ -3,10 +3,44 @@ from dealer import Dealer
 from auto_player import Player
 
 
-def logic(dealer, player):
+def logic(dealer, player, possible_split):
     face_up = dealer.hand.hand[0]
     score = player.hand.hand_value()
     soft = player.hand.hand_is_soft()
+    first_card = player.hand.hand[0]
+    if possible_split:
+        if first_card == 'A':
+            return 'split'
+        elif first_card in ['10', 'J', 'Q', 'K']:
+            return 's'
+        elif first_card == '9':
+            if face_up in ['7', '10', 'J', 'Q', 'K']:
+                return 's'
+            else:
+                return 'split'
+        elif first_card == '8':
+            return 'split'
+        elif first_card in ['7', '2', '3']:
+            if face_up in ['2', '3', '4', '5', '6', '7']:
+                return 'split'
+            else:
+                return 'h'
+        elif first_card == '6':
+            if face_up in ['2', '3', '4', '5', '6']:
+                return 'split'
+            else:
+                return 'h'
+        elif first_card == '5':
+            if face_up in ['10', 'J', 'Q', 'K', 'A']:
+                return 'h'
+            else:
+                return 'd'
+        else:
+            if face_up in ['5', '6']:
+                return 'split'
+            else:
+                return 'h'
+
     if soft:  # soft cases
         if score-11 == 9:
             return 's'
@@ -68,6 +102,13 @@ def logic(dealer, player):
             return 'h'
 
 
+def split_possible(player):
+    first = player.hand.hand[0]
+    second = player.hand.hand[1]
+
+    return first == second or (first in ['10', 'J', 'Q', 'K'] and second in ['10', 'J', 'Q', 'K'])
+
+
 # noinspection DuplicatedCode,DuplicatedCode
 def gameplay(percentage):
 
@@ -77,6 +118,7 @@ def gameplay(percentage):
     wins = 0
     losses = 0
     ties = 0
+    blackjacks = 0
 
     deck = Deck()
     deck.shuffle()
@@ -105,7 +147,12 @@ def gameplay(percentage):
                 player.balance += bet
             else:
                 losses += 1
-            game_ended = True
+            if player.balance <= 1:
+                break
+            else:
+                player = Player(player.balance)
+                dealer = Dealer()
+                continue
 
         elif score == 21:  # check for blackjack
             if deal_score == 21:  # only case where that could be a draw
@@ -113,64 +160,142 @@ def gameplay(percentage):
                 player.balance += bet
             else:
                 player.balance += 2.5*bet
-                wins += 1
-            game_ended = True
+                blackjacks += 1
+            if player.balance <= 1:
+                break
+            else:
+                player = Player(player.balance)
+                dealer = Dealer()
+                continue
 
         else:  # UNDER case player turn
-            ans = logic(dealer, player)
-            if ans == 'd':
+
+            if split_possible(player) and 'split' == logic(dealer, player, True) and player.balance >= 4:
                 player.balance -= bet
-                bet = 2 * bet
-                player.hand.add_card(deck.draw())
-                score = player.hand.hand_value()
-                if score > 21:
-                    losses += 1
-                    game_ended = True
-                elif score == 21:
-                    game_ended = False
-            elif ans == 's':
-                game_ended = False
+                player.split_hand()
+                bets = list()
+                scores = list()
+                game_status = list()
+                for hand in player.hands:
+                    hand.add_card(deck.draw())
+                    ans = logic(dealer, player, False)
+                    if ans == 'd':
+                        player.balance -= bet
+                        bet = 2 * bet
+                        hand.add_card(deck.draw())
+                        score = hand.hand_value()
+                        if score > 21:
+                            losses += 1
+                            game_ended = True
+                        elif score == 21:
+                            game_ended = False
+                    elif ans == 's':
+                        game_ended = False
+                    else:
+                        while ans == 'h' or ans == 'd':
+                            hand.add_card(deck.draw())
+                            score = hand.hand_value()
+                            if score > 21:
+                                losses += 1
+                                game_ended = True
+                                break
+                            elif score == 21:
+                                game_ended = False
+                                break
+                            ans = logic(dealer, player, False)
+
+                    scores.append(score)
+                    game_status.append(game_ended)
+                    bets.append(bet)
+
+                for k, hand in enumerate(player.hands):
+                    game_ended = game_status[k]
+                    score = scores[k]
+                    bet = bets[k]
+                    if not game_ended:  # dealer turn
+                        while deal_score <= 17:
+                            while deal_score < 17:
+                                dealer.hand.add_card(deck.draw())
+                                deal_score, sof17 = dealer.hand.hand_value()
+                            if soft17:
+                                dealer.hand.add_card(deck.draw())
+                                deal_score, sof17 = dealer.hand.hand_value()
+                            else:
+                                break
+                        if deal_score > 21 or score > deal_score:
+                            wins += 1
+                            player.balance += 2 * bet
+
+                        elif deal_score == score:
+                            ties += 1
+                            player.balance += bet
+
+                        else:
+                            losses += 1
+
+                if player.balance <= 1:
+                    break
+                else:
+                    player = Player(player.balance)
+                    dealer = Dealer()
+                    continue
+
             else:
-                while ans == 'h' or ans == 'd':
+
+                ans = logic(dealer, player, False)
+                if ans == 'd':
+                    player.balance -= bet
+                    bet = 2 * bet
                     player.hand.add_card(deck.draw())
                     score = player.hand.hand_value()
                     if score > 21:
                         losses += 1
                         game_ended = True
-                        break
                     elif score == 21:
                         game_ended = False
-                        break
-                    ans = logic(dealer, player)
-
-        if not game_ended:  # dealer turn
-            while deal_score <= 17:
-                while deal_score < 17:
-                    dealer.hand.add_card(deck.draw())
-                    deal_score, sof17 = dealer.hand.hand_value()
-                if soft17:
-                    dealer.hand.add_card(deck.draw())
-                    deal_score, sof17 = dealer.hand.hand_value()
+                elif ans == 's':
+                    game_ended = False
                 else:
-                    break
-            if deal_score > 21 or score > deal_score:
-                wins += 1
-                player.balance += 2*bet
+                    while ans == 'h' or ans == 'd':
+                        player.hand.add_card(deck.draw())
+                        score = player.hand.hand_value()
+                        if score > 21:
+                            losses += 1
+                            game_ended = True
+                            break
+                        elif score == 21:
+                            game_ended = False
+                            break
+                        ans = logic(dealer, player, False)
 
-            elif deal_score == score:
-                ties += 1
-                player.balance += bet
+            if not game_ended:  # dealer turn
+                while deal_score <= 17:
+                    while deal_score < 17:
+                        dealer.hand.add_card(deck.draw())
+                        deal_score, sof17 = dealer.hand.hand_value()
+                    if soft17:
+                        dealer.hand.add_card(deck.draw())
+                        deal_score, sof17 = dealer.hand.hand_value()
+                    else:
+                        break
+                if deal_score > 21 or score > deal_score:
+                    wins += 1
+                    player.balance += 2*bet
 
+                elif deal_score == score:
+                    ties += 1
+                    player.balance += bet
+
+                else:
+                    losses += 1
+
+            if player.balance <= 1:
+                break
             else:
-                losses += 1
+                player = Player(player.balance)
+                dealer = Dealer()
 
-        if player.balance <= 1:
-            break
-        else:
-            player = Player(player.balance)
-            dealer = Dealer()
-
-    return wins, losses, ties
+    return wins, losses, ties, blackjacks
 
 
 def run_gameplay(it):
@@ -178,20 +303,22 @@ def run_gameplay(it):
     wins = []
     losses = []
     ties = []
+    blackjacks = []
 
     while i < it:
-        win, loss, tie = gameplay(0.01)
+        win, loss, tie, blackjack = gameplay(0.01)
         i += 1
         wins.append(win)
         losses.append(loss)
         ties.append(tie)
+        blackjacks.append(blackjack)
 
-    return wins, losses, ties
+    return wins, losses, ties, blackjacks
 
 
 if __name__ == '__main__':
     from multiprocessing import Pool
-    N = 10000  # iterations
+    N = 12  # iterations
     P = 4  # thread
 
     p = Pool(P)
@@ -199,20 +326,26 @@ if __name__ == '__main__':
     wins = []
     losses = []
     ties = []
+    blackjacks = []
     for obj in results:
         count = 0
         for ob in obj:
-            if count % 3 == 0:
+            if count % 4 == 0:
                 for i in ob:
                     wins.append(i)
                 count += 1
-            elif count % 3 == 1:
+            elif count % 4 == 1:
                 for i in ob:
                     losses.append(i)
                 count += 1
-            else:
+            elif count % 4 == 2:
                 for i in ob:
                     ties.append(i)
+                count += 1
+            else:
+                for i in ob:
+                    blackjacks.append(i)
+                count += 1
 
     file = open('simple_logic.txt', 'w')
 
@@ -220,6 +353,7 @@ if __name__ == '__main__':
         win = wins[i]
         loss = losses[i]
         tie = ties[i]
-        file.write(f'{win}\t{loss}\t{tie}\t{win + loss + tie}\n')
+        blackjack = blackjacks[i]
+        file.write(f'{win}\t{loss}\t{tie}\t{blackjack}\t{win + loss + tie + blackjack}\n')
 
     file.close()

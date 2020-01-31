@@ -162,7 +162,11 @@ def gameplay():
             else:
                 print('You win')
                 player.balance += 2.5*bet
-            game_ended = True
+            player, dealer = hand_ended(player)
+            if any((player, dealer)):
+                continue
+            else:
+                break
 
         else:  # UNDER case player turn
 
