@@ -17,7 +17,7 @@ def welcome():
     print('Aces can be 1 or 11 (choice is automatic).')
     print('Rules of the house: ')
     print('- The dealer has 1 card face up and 1 face down.')
-    print('- The player has 2 cards face up, he can choose to hit (get a card) or stay.')
+    print('- The player has 2 cards face up, he can hit (get a card), stay, double or split.')
     print('- If he goes over 21 (BUST) the hand is over and he loses the bet.')
     print('- Blackjack (A + 10 or figure) pays 3:2, unless the dealer has one too (draw).')
     print('- If the dealer shows an A, ask for insurance (pays 2:1) then he checks for blackjack.')
@@ -27,7 +27,7 @@ def welcome():
     print('- When the dealer stops hitting (if he has not busted), the higher value hand wins.')
     print('- If the hand ends with a tie the player gets his bet back, if he wins double of it.')
 
-    print('\n\n Future versions aim to implement actions such as split, double down and insurance')
+    print('\n\n Future versions aim to implement multiple split')
 
     while True:
         try:
@@ -162,7 +162,11 @@ def gameplay():
             else:
                 print('You win')
                 player.balance += 2.5*bet
-            game_ended = True
+            player, dealer = hand_ended(player)
+            if any((player, dealer)):
+                continue
+            else:
+                break
 
         else:  # UNDER case player turn
 

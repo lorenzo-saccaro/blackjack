@@ -34,7 +34,7 @@ class Player:
                     return 'hit'
                 elif ans in stay:
                     return 'stay'
-                elif ans in double:
+                elif ans in double:  # aggiungere controllo bet non potra essere piu static
                     return 'double'
                 else:
                     continue
@@ -67,7 +67,7 @@ class Player:
                 else:
                     return True
             elif ans == 'n':
-                return True
+                return False
 
     class Hand:
 
