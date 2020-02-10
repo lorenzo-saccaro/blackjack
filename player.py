@@ -67,7 +67,7 @@ class Player:
                 else:
                     return True
             elif ans == 'n':
-                return True
+                return False
 
     class Hand:
 

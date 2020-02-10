@@ -318,7 +318,7 @@ def run_gameplay(it):
 
 if __name__ == '__main__':
     from multiprocessing import Pool
-    N = 12  # iterations
+    N = 100  # iterations
     P = 4  # thread
 
     p = Pool(P)
