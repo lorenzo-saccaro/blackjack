@@ -53,7 +53,7 @@ class Player():
                 value += self.values[card]
                 if card == 'A':
                     aces += 1
-            while (aces > 0 and value > 21):
+            while aces > 0 and value > 21:
                 value -= 10
                 aces -= 1
             return aces >= 1

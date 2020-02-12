@@ -112,7 +112,9 @@ def split_possible(player):
 # noinspection DuplicatedCode,DuplicatedCode
 def gameplay(percentage):
 
-    player = Player(100)
+    file_log = open("log.txt", 'w')
+
+    player = Player(1000)
     dealer = Dealer()
 
     wins = 0
@@ -124,6 +126,8 @@ def gameplay(percentage):
 
     while True:
         game_ended = False
+
+        file_log.write(f'{player.balance}\n')
 
         deck.check_reshuffle()
 
@@ -168,8 +172,6 @@ def gameplay(percentage):
                 continue
 
         else:  # UNDER case player turn
-            test = split_possible(player)
-            test2 = logic(dealer, player, True)
 
             if split_possible(player) and 'split' == logic(dealer, player, True) and player.balance >= 4:
                 player.balance -= bet
@@ -296,13 +298,14 @@ def gameplay(percentage):
                 player = Player(player.balance)
                 dealer = Dealer()
 
+    file_log.close()
     return wins, losses, ties
 
 
 if __name__ == '__main__':
     file = open('simple_logic.txt', 'w')
     progress = 0
-    max_iteration = 10
+    max_iteration = 1
     max_range = 2
     for perc in range(1, max_range):
         N = 0

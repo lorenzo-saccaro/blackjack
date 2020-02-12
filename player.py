@@ -59,7 +59,7 @@ class Player:
 
     def split(self, bet):
         while True:
-            ans = input("Do you want to splint yur hand? (y or n) ")
+            ans = input("Do you want to split your hand? (y or n) ")
             if ans == 'y':
                 if bet > self.balance:
                     print("Not enough money to split")
