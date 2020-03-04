@@ -4,22 +4,23 @@ class Player:
         self.hand = self.Hand()  # analizza comportamento
         self.hands = list()
 
-    def place_bet(self):
-        try:
-            bet = int(input('Insert the bet amount: '))
-            if bet < 0:
-                raise ValueError
-            if self.balance - bet < 0:
-                raise ArithmeticError
-        except ArithmeticError:
-            print('Not enough money')
-            self.place_bet()
-        except ValueError:
-            print('Please insert only a positive amount')
-            self.place_bet()
-        else:
-            self.balance -= bet
-            return bet
+    def place_bet(self):  # controlla gestione exception, errore sul return value
+        while True:
+            try:
+                bet = int(input('Insert the bet amount: '))
+                if bet < 0:
+                    raise ValueError
+                if self.balance - bet < 0:
+                    raise ArithmeticError
+            except ArithmeticError:
+                print('Not enough money')
+                continue
+            except ValueError:
+                print('Please insert only a positive amount')
+                continue
+            else:
+                self.balance -= bet
+                return bet
 
     @staticmethod
     def hit_or_stay(doubled):
@@ -59,7 +60,7 @@ class Player:
 
     def split(self, bet):
         while True:
-            ans = input("Do you want to splint yur hand? (y or n) ")
+            ans = input("Do you want to split your hand? (y or n) ")
             if ans == 'y':
                 if bet > self.balance:
                     print("Not enough money to split")
